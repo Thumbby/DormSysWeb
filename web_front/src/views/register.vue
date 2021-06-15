@@ -8,27 +8,27 @@
 
     <el-card class="box" shadow="always">
       <el-row class="title">
-        <h2>登录</h2>
+        <h2>注册</h2>
       </el-row>
-      <el-form label-width="0" :model="loginForm" ref="loginForm" :rules="loginFormRules">
+      <el-form label-width="0" :model="registerForm" ref="registerForm" :rules="registerFormRules">
         <el-form-item prop="username">
           <i class="el-icon-user"></i>
-          <el-input class="form-input" v-model="loginForm.userID" placeholder="学号">
+          <el-input class="form-input" v-model="registerForm.userName" placeholder="用户名">
           </el-input>
         </el-form-item>
 
         <el-form-item prop="password">
           <i class="el-icon-user"></i>
-          <el-input class="form-input" v-model="loginForm.password" placeholder="账号密码" show-password>
+          <el-input class="form-input" v-model="registerForm.password" placeholder="账号密码" show-password>
           </el-input>
         </el-form-item>
         
         <el-form-item class="login">
-          <el-button type="primary" class="form-button" v-on:click="login('loginForm')" round id="login">登录</el-button>
+          <el-button type="primary" class="form-button" v-on:click="register('registerForm')" round id="register">注册</el-button>
         </el-form-item>
 
         <el-form-item class="register">
-          <el-button type="info" size="mini" class="form-button" v-on:click="toRegister" round id="register">注册账号</el-button>
+          <el-button type="info" size="mini" class="form-button" v-on:click="toLogin" round id="login">去登录</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -38,17 +38,16 @@
 <script>
 
 export default {
-  name: "Login",
+  name: "Register",
   data(){
     return {
-      loginForm:{
-        userID:'',
+      registerForm:{
+        userName:'',
         password:'',
       },
-      loginFormRules:{
-        userID: [
-          { required: true, message: '请输入学号', trigger: 'blur' },
-          {  min:7, max: 7, message: '请输入正确的学号', trigger: 'blur' }
+      registerFormRules:{
+        userName: [
+          { required: true, message: '请输入用户名', trigger: 'blur' },
           ],
         password: [
           { required: true, message: '请输入登陆密码', trigger: 'blur' },
@@ -58,29 +57,27 @@ export default {
     }
   },
   methods:{
-    login(formName){
+    register(formName){
       this.$refs[formName].validate(valid => {
         if (valid) {
-          this.$axios.post("/Login",{
-            "userID": Number(this.loginForm.userID),
-            "password": this.loginForm.password
+          this.$axios.post("/Register",{
+            "userName": this.registerForm.userName,
+            "password": this.registerForm.password
           })
           .then(res=>{
             if(res.data.success==1){
-              window.alert("login succeed")
-              console.log(res.data.token)
-              localStorage.setItem('token',res.data.token)
-              //location = "/#/workBench";
+              window.alert("Register succeed")
+              location = "/#/login";
             }
             else{
-              window.alert(res.data.msg)
+                window.alert(res.data.msg)
             }
           })
         }
       });
     },
-    toRegister:function() {
-      location = "/#/register";
+    toLogin:function() {
+      location = "/#/login";
     },
   }
 }

@@ -10,6 +10,7 @@ import './assets/css/global.css'
 Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.prototype.$axios = axios
+axios.defaults.baseURL="/api"
 
 router.beforeEach((to, from, next) => {
   var token = localStorage.getItem('token')//存储token
