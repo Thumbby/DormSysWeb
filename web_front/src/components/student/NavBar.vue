@@ -2,7 +2,7 @@
 
     <div class="navbar">
 
-      <i class="el-icon-menu" id="switch"></i>
+      <i class="el-icon-s-platform" id="switch"></i>
       
       <p>{{routeName}}</p>
 
@@ -39,8 +39,9 @@ export default {
   methods:{
     // 退出登录逻辑
     logout:function(){
-      localStorage.removeItem("token" );
-        location = "/#/login";
+      localStorage.removeItem('token');
+      localStorage.removeItem('userInfo')
+      location = "/#/login";
     },
   }
 }

@@ -52,7 +52,7 @@ export default {
           ],
         password: [
           { required: true, message: '请输入登陆密码', trigger: 'blur' },
-          { min: 6, max: 15, message: '长度在 6 到 15 个字符', trigger: 'blur' }
+          { min: 5, max: 15, message: '长度在 6 到 15 个字符', trigger: 'blur' }
         ]
       }
     }
@@ -68,9 +68,20 @@ export default {
           .then(res=>{
             if(res.data.success==1){
               window.alert("login succeed")
-              console.log(res.data.token)
               localStorage.setItem('token',res.data.token)
-              //location = "/#/workBench";
+              if(res.data.access==1){
+                localStorage.setItem('access','admin')
+                location="/#/admin_index"
+              }
+              else{
+                localStorage.setItem('access','student')
+                var userInfo={
+                  userID:this.loginForm.userID,
+                  userName:res.data.userName
+                }
+                localStorage.setItem('userInfo',JSON.stringify(userInfo))
+                location="/#/student_index"
+              }
             }
             else{
               window.alert(res.data.msg)
