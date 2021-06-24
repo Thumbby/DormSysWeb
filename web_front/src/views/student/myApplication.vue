@@ -7,14 +7,7 @@
                     trigger="click">
                     <el-form>
                         <el-form-item label="申请寝室号">
-                            <el-select v-model="change_application.destDormID" placeholder="选择寝室">
-                                <el-option 
-                                    v-for="(item,index) in dorm_list"
-                                    :key="index"
-                                    :value="item"
-                                    :label="item">
-                                </el-option>
-                            </el-select>
+                            <el-input v-model="change_application.destDormID" placeholder="选择寝室"/>
                         </el-form-item>
                         <el-form-item label="申请原因">
                             <el-input v-model="change_application.reason" type="textarea" :autosize="{minRows: 2}"/>
@@ -81,7 +74,7 @@ export default{
             dorm_list:[],
             change_application:{
                 userID:'',
-                destDormID:0,
+                destDormID:'',
                 reason:'',
             },
             repair_application_list:[],
@@ -136,6 +129,7 @@ export default{
             }
         },
         applyChange(){
+            this.change_application.destDormID=Number(this.change_application.destDormID)
             this.$axios({
                 method:'post',
                 url:'/Change',

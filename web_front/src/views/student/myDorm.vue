@@ -42,10 +42,10 @@
                     :key="item.workID"
                     :title="item.workName"
                     :name="item.workId">
-                    <div>负责人:{{item.userID}}</div>
+                    <div>负责人学号:{{item.userID}}</div>
                     <div>创建时间:{{item.workDate}}</div>
                     <div>是否完成:{{item.isCompleted}}</div>
-                    <el-button v-if="item.isCompleted!='1'" type="primary" size='mini' @click="completeWork(item.workID)">完成宿务</el-button>
+                    <el-button v-if="item.isCompleted!='是'" type="primary" size='mini' @click="completeWork(item.workID)">完成宿务</el-button>
                 </el-collapse-item>
             </el-collapse>
         </el-tab-pane>
@@ -140,6 +140,9 @@ export default{
             .then((res)=>{
                 if(res.data.success==1){
                     this.work_list=res.data.works;
+                    for(var i in this.work_list){
+                        this.work_list[i].isCompleted=this.work_list[i].isCompleted==1?'是':'否'
+                    }
                     if(this.work_list.length!=0){
                         this.activeName=this.work_list[0].workID;
                     }
@@ -166,7 +169,7 @@ export default{
         findWorkByID(work_list,workID){
             for(var i in work_list){
                 if(work_list[i].workID==workID){
-                    work_list[i].isCompleted='1';
+                    work_list[i].isCompleted='是';
                     break;
                 }
             }

@@ -45,14 +45,7 @@
                             placement="right"
                             width="200"
                             trigger="click">
-                            <el-select v-model="dorm_select" placeholder="请选择寝室">
-                                <el-option
-                                v-for="item in dorm_list"
-                                :key="item"
-                                :label="item"
-                                :value="item">
-                                </el-option>
-                            </el-select>
+                            <el-input v-model="dorm_select" placeholder="请选择寝室"/>
                             <br/><br/>
                             <el-select v-model="isLeader" placeholder="是否为寝室长">
                                 <el-option
@@ -80,7 +73,6 @@ export default {
     data(){
         return{
             activeTab:'all',
-            dorm_list:['1','2','3','4'],
             leader_list:['否','是'],
             dorm_select:'',
             isLeader:'',
@@ -164,8 +156,26 @@ export default {
             }
         },
         distributeDorm(row){
-            console.log(row.userID)
-            console.log(this.dorm_select)
+            var distribution={}
+            distribution.userID=row.userID
+            distribution.dormID=Number(this.dorm_select)
+            distribution.isLeader=this.isLeader
+            this.$axios({
+                method:'post',
+                url:"/Dorm",
+                data:distribution,
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
+            })
+            .then((res)=>{
+                if(res.data.success==1){
+                    this.getNotArrangedStudent();
+                }
+                else{
+                    window.alert(res.data.msg)
+                }
+            })
         }
     }
 }

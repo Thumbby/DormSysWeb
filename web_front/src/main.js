@@ -12,7 +12,7 @@ Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.prototype.$axios = axios
 Vue.prototype.$moment = Moment
-axios.defaults.baseURL="/api"
+//axios.defaults.baseURL="/api"
 
 router.beforeEach((to, from, next) => {
   var token = localStorage.getItem('token')//存储token

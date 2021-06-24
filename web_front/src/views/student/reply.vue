@@ -1,11 +1,37 @@
 <template>
-    <div>
+<div>
+    <div class="author-info">
+        <span class="author-name">{{postInfo.postAuthor}}</span>
+        <span class="author-time">{{postInfo.postTime.replace('T',' ')}}</span>
+    </div>
+    <div class="icon-btn">
+        <span @click="showReplyInput()"><i class="iconfont el-icon-s-comment"></i>{{replys.length}}</span>
+    </div>
+    <div class="talk-box">
+        <p>
+            <span class="reply">{{postInfo.postContent}}</span>
+        </p>
+    </div>
+    <div class="reply-box">
+        <div v-for="reply in replys" :key="reply.replyID" class="author-title">
+            <div class="author-info">
+                <span class="author-name">{{reply.userName}}</span>
+                <span class="author-time">{{reply.replyTime.replace('T',' ')}}</span>
+            </div>
+            <div class="talk-box">
+                <p>
+                    <span>回复 {{postInfo.postAuthor}}:</span>
+                    <span class="reply">{{reply.content}}</span>
+                </p>
+            </div>
+        </div>
+    </div>
         <div v-clickoutside="hideReplyBtn" @click="inputFocus" class="my-reply">
             <div class="reply-info" >
                 <div 
                 tabindex="0" 
                 contenteditable="true" 
-                id="postInput" 
+                :id='postInfo.postID' 
                 spellcheck="false" 
                 placeholder="输入评论..." 
                 class="reply-input" 
@@ -15,17 +41,12 @@
                 </div>
             </div>
             <div class="reply-btn-box" v-show="btnShow">
-                <el-button class="reply-btn" size="medium" @click="sendComment" type="primary">发表评论</el-button>
+                <el-button class="reply-btn" size="medium" @click="sendReply" type="primary">发表评论</el-button>
             </div>
         </div>
-        <div v-for="(item,index) in posts" :key="index" class="author-title reply-father">
-            <Reply :postInfo="{postID:item.postID,postAuthor:item.userName,postContent:item.content,postTime:item.postTime}"/>
-        </div>
-    </div>
+</div>
 </template>
-
 <script>
-import Reply from "@/views/student/reply";
 const clickoutside = {
     // 初始化指令
     bind(el, binding) {
@@ -51,35 +72,43 @@ const clickoutside = {
     delete el.vueClickOutside;
   },
 };
-export default {
-    name:'community',
+export default{
+    name:"reply",
     data(){
         return{
-            btnShow: false,
-            index:'0',
-            postContent:'',
-            userName:'',
-            userID:'',
-            posts:[],
-            replys:[],
+            btnShow:false,
+            replyContent:'',
+            replys:[]
         }
     },
-    components:{
-        Reply
-        },
+    props:['postInfo'],
     directives: {clickoutside},
     mounted(){
-        var userInfo=JSON.parse(localStorage.getItem('userInfo'))
-        this.userID=userInfo.userID
-        this.userName=userInfo.userName
-        this.getComment();
+        this.getRplys();
     },
-    methods: {
+    methods:{
+        getRplys(){
+        this.$axios({
+            method:"get",
+            url:"/Reply/"+this.postInfo.postID,
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+        })
+        .then((res)=>{
+            if(res.data.success==1){
+                for(var i in res.data.replys){
+                    res.data.replys[i].userName=res.data.userNames[i]
+                }
+            }
+            this.replys=res.data.replys
+        })
+        },
         inputFocus(){
-            var postInput = document.getElementById('postInput');
-            postInput.style.padding= "8px 8px"
-            postInput.style.border ="2px solid blue"
-            postInput.focus()
+            var replyInput = document.getElementById(this.postInfo.postID);
+            replyInput.style.padding= "8px 8px"
+            replyInput.style.border ="2px solid blue"
+            replyInput.focus()
         },  
         showReplyBtn(){
             this.btnShow = true
@@ -87,73 +116,41 @@ export default {
         hideReplyBtn(){
             this.btnShow = false
         },
-        showReplyInput(i){
-            this.index =i
-        },
-        _inputShow(i){
-            return this.comments[i].inputShow 
-        },
-        getComment(){
-            this.replys=[]
+        sendReply(){
+            console.log(this.replyContent)
+            var reply={
+                postID:Number(this.postInfo.postID),
+                userID:Number(JSON.parse(localStorage.getItem('userInfo')).userID),
+                content:this.replyContent,
+            }
+            console.log(reply)
             this.$axios({
-                method:'get',
-                url:'/Post',
+                method:'post',
+                url:'/Reply',
+                data:reply,
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
                 },
             })
             .then((res)=>{
                 if(res.data.success==1){
-                    this.posts=res.data.posts;                    
-                    for(var i=0;i<this.posts.length;i++){
-                        this.posts[i].userName=res.data.userNames[i]
-                    }
+                    window.alert("回复成功")
+                    let input =  document.getElementById(this.postInfo.postID)
+                    this.replyContent = ''
+                    input.innerHTML = '';
+                    this.getRplys();
                 }
                 else{
-                    this.posts=[]
+                    window.alert(res.data.msg)
                 }
             })
         },
-        sendComment(){
-            if(!this.postContent){
-                 this.$message({
-                    showClose: true,
-                    type:'warning',
-                    message:'评论不能为空'
-                })
-            }else{
-                var post={}
-                post.userID=Number(this.userID)
-                post.content=this.postContent
-                this.$axios({
-                    method:'post',
-                    url:'/Post',
-                    data:post,
-                    headers: {
-                        Authorization: "Bearer " + localStorage.getItem("token"),
-                    },
-                })
-                .then((res)=>{
-                    if(res.data.success==1){
-                        let input =  document.getElementById('postInput')
-                        this.postContent = ''
-                        input.innerHTML = '';
-                        this.getComment();
-                        window.alert('发送成功')
-                    }
-                    else{
-                        window.alert(res.success.msg)
-                    }
-                })
-            }
-        },
         onDivInput: function(e) {
-            this.postContent = e.target.innerHTML;
+            this.replyContent = e.target.innerHTML;
         },
-    },    
+    }
 }
 </script>
-
 <style lang="stylus" scoped>
 .my-reply
     padding 10px

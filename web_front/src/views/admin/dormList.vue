@@ -8,8 +8,7 @@
             :value="index">
         </el-option>
     </el-select>
-    <el-button type="primary" v-if="!change" @click="changeScore">修改</el-button>
-    <el-button type="primary" v-if="change" @click="postScore">保存</el-button>
+    <el-button type="primary" v-if="change" @click="changeScore">修改</el-button>
     <el-table
     :data="dorm_score">
         <el-table-column
@@ -41,12 +40,41 @@ export default {
             score_avaliable:[1,2,3,4,5],
             date:['第一周','第二周','第三周','第四周','第五周','第六周','第七周','第八周','第九周','第十周','第十一周','第十二周','第十三周',
             '第十四周','第十五周','第十六周','第十七周'],
-            dorm_score:[]
+            dorm_score:[],
+            dormList:[],
         }
     },
     mounted(){
     },
     methods:{
+        contains(arr,value){
+            for(var i in arr){
+                if(arr[i]['dormID']==value){
+                    return true;
+                }
+            }
+            return false;
+        },
+        getDorm(){
+            this.$axios({
+                method:'get',
+                url:'/Dorm',
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
+        })
+        .then((res)=>{
+            this.dormList=[]
+            for(var i in res.data.dormList){
+                if(this.contains(this.dormList,res.data.dormList[i].dormID)){
+                    continue;
+                }
+                this.dormList.push({dormID:res.data.dormList[i].dormID})
+            }
+            this.dorm_score=this.dormList
+            console.log(this.dorm_score)
+        })
+        },
         changeDate(event){
             this.$axios({
                 method:'get',
@@ -58,14 +86,20 @@ export default {
             .then((res)=>{
                 if(res.data.success==1){
                     this.dorm_score=res.data.scores
+                    if(this.dorm_score.length!=0){
+                        this.change=false
+                    }
+                    else{
+                        this.change=true
+                        this.getDorm();
+                    }
                 }
             })
         },
         changeScore(){
-            this.change=true;
-        },
-        postScore(){
-            console.log(this.dorm_score)
+            for(var i in this.dorm_score){
+                this.dorm_score[i].weekNum=Number(this.date_now+1)
+            }
             this.$axios({
                 method:'post',
                 url:'/Score',
@@ -75,7 +109,13 @@ export default {
                 },
             })
             .then((res)=>{
-                console.log(res)
+                if(res.data.success!=1){
+                    window.alert(res.data.msg)
+                }
+                else{
+                    window.alert('评分成功')
+                    this.change=false
+                }
             })
         },
     }

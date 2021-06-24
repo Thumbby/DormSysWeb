@@ -73,7 +73,7 @@ export default {
                 isLeader:0
             }
             this.$axios({
-                method:'post',
+                method:'put',
                 url:'/Dorm',
                 data:application,
                 headers: {
